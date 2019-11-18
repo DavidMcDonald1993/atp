@@ -1,5 +1,6 @@
 import os.path
 from tools import run_command
+import pandas as pd
 try:
 	import cPickle as pickle 
 except Exception as e:
@@ -37,19 +38,24 @@ def main(input_graph_name, rank = 64, nodeID_need_mapping = False, strategy = "H
 		else:
 			transformed_W[index] = w 
 			transformed_H[index] = h
-	W_file = os.path.abspath(input_graph_name).split(".")[0] + "_r" + str(rank)  + "_" + strategy + "_W.pkl"
-	H_file = os.path.abspath(input_graph_name).split(".")[0] + "_r" + str(rank)  + "_" + strategy + "_H.pkl"
 
-	print("S is saved at: %s, T is saved at: %s" % (W_file,H_file))
-	with open(W_file,"wb") as f:
-		pickle.dump(transformed_W,f)
-	with open(H_file,"wb") as f:
-		pickle.dump(transformed_H,f)
-	'''
-	transformed_W: dict, key = nodeID, value = latent vector with k = rank dimensions
-	transformed_H: dict, key = nodeID, value = latent vector with k = rank dimensions
-	'''
-	return transformed_W,transformed_H
+
+	return pd.DataFrame(transformed_H).T, pd.DataFrame(transformed_W).T
+	# print (pd.DataFrame(transformed_W).T.shape)
+	
+	# # W_file = os.path.abspath(input_graph_name).split(".")[0] + "_r" + str(rank)  + "_" + strategy + "_W.pkl"
+	# # H_file = os.path.abspath(input_graph_name).split(".")[0] + "_r" + str(rank)  + "_" + strategy + "_H.pkl"
+
+	# print("S is saved at: %s, T is saved at: %s" % (W_file,H_file))
+	# with open(W_file,"wb") as f:
+	# 	pickle.dump(transformed_W,f)
+	# with open(H_file,"wb") as f:
+	# 	pickle.dump(transformed_H,f)
+	# '''
+	# transformed_W: dict, key = nodeID, value = latent vector with k = rank dimensions
+	# transformed_H: dict, key = nodeID, value = latent vector with k = rank dimensions
+	# '''
+	# return transformed_W,transformed_H
 
 import argparse
 if __name__ == "__main__":
@@ -62,7 +68,21 @@ if __name__ == "__main__":
 	parser.add_argument('--using_GPU', help='Using GPU to do the matrix factorization (cumf/cumf_ccd)', action='store_true')
 	parser.add_argument('--dense_M', help='Dense representation of M', action='store_true')
 	parser.add_argument('--using_SVD', help='Using SVD to generate embeddings from M', action='store_true')
+	parser.add_argument("--output", dest="output", 
+        type=str, default=None,
+        help="directory to save embedding.")
 	args = parser.parse_args()
-	main(args.dag, rank = args.rank, strategy = args.strategy, nodeID_need_mapping = args.id_mapping, using_GPU = args.using_GPU, dense_M = args.dense_M, using_SVD = args.using_SVD)
+	source, target = main(args.dag, rank = args.rank, strategy = args.strategy, nodeID_need_mapping = args.id_mapping, using_GPU = args.using_GPU, dense_M = args.dense_M, using_SVD = args.using_SVD)
 
+	output_dir = args.output 
+
+	if not os.path.exists(output_dir):
+		print ("making directory", output_dir)
+		try:
+			os.makedirs(output_dir)
+		except OSError as e:
+			if e.errno != errno.EEXIST:
+				raise
+	source.to_csv(os.path.join(output_dir, "source.csv"))
+	target.to_csv(os.path.join(output_dir, "target.csv"))
 
