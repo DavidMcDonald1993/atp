@@ -6,7 +6,7 @@
 #SBATCH --array=0-749
 #SBATCH --time=3:00:00
 #SBATCH --ntasks=1
-#SBATCH --mem=20G
+#SBATCH --mem=10G
 
 datasets=({cora_ml,citeseer,pubmed,wiki_vote,email})
 dims=(2 5 10 25 50)
@@ -37,7 +37,7 @@ then
     module load Python/2.7.15-GCCcore-8.2.0
 
     # install required packages
-    pip install --user numpy scipy pandas trueskill
+    pip install --user numpy==1.13.3 pandas trueskill networkx==1.10
 
     output="datasets/${dataset}"
 
