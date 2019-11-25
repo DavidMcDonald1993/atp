@@ -39,7 +39,8 @@ def main ():
             if e.errno != errno.EEXIST:
                 raise
 
-    nx.write_edgelist(g, os.path.join(args.output, "edgelist.edges" ), data=[])
+    nx.write_edgelist(g, os.path.join(args.output, "edgelist.edges" ), 
+        data=[])
 
 
 if __name__ == "__main__":

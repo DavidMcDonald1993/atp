@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH --job-name=ATPembeddingsRECON
-#SBATCH --output=ATPembeddingsRECON_%A_%a.out
-#SBATCH --error=ATPembeddingsRECON_%A_%a.err
+#SBATCH --job-name=ATPembeddingsLP
+#SBATCH --output=ATPembeddingsLP_%A_%a.out
+#SBATCH --error=ATPembeddingsLP_%A_%a.err
 #SBATCH --array=0-749
 #SBATCH --time=10:00:00
 #SBATCH --ntasks=1
@@ -25,8 +25,9 @@ dim=${dims[$dim_id]}
 seed=${seeds[$seed_id]}
 
 data_dir=../HEDNet/datasets/${dataset}
-edgelist=${data_dir}/edgelist.tsv
-embedding_dir=embeddings/${dataset}/recon_experiment
+# edgelist=${data_dir}/edgelist.tsv
+edgelist=$(printf ../HEDNet/edgelists/${dataset}/seed=%03d/training_edges/edgelist.tsv ${seed})
+embedding_dir=embeddings/${dataset}/lp_experiment
 embedding_dir=$(printf "${embedding_dir}/seed=%03d/dim=%03d" ${seed} ${dim})
 
 if [ ! -f ${embedding_dir}/ln/source.csv.gz ]
@@ -39,7 +40,7 @@ then
     # install required packages
     pip install --user numpy==1.13.3 pandas trueskill networkx==1.10
 
-    output="datasets/${dataset}/recon_experiment"
+    output=$(printf "datasets/${dataset}/lp_experiment/seed=%03d" ${seed})
 
     python convert_edgelist.py --edgelist ${edgelist} --output ${output} 
 
