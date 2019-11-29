@@ -39,7 +39,7 @@ then
     # install required packages
     pip install --user numpy==1.13.3 pandas trueskill networkx==1.10
 
-    output="datasets/${dataset}/recon_experiment"
+    output=$(printf "datasets/${dataset}/recon_experiment/seed=%03d" ${seed})
 
     python convert_edgelist.py --edgelist ${edgelist} --output ${output} 
 
@@ -61,7 +61,8 @@ then
         --rank ${dim} --using_SVD )
     
     # perform embedding (ln)
-    ln_args=$(echo --strategy ln --output ${embedding_dir}/ln)
+    ln_args=$(echo --strategy ln \
+        --output ${embedding_dir}/ln)
     python main_atp.py ${embed_args} ${ln_args}
 
     # perform embedding (harmonic)
