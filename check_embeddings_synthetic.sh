@@ -1,21 +1,22 @@
 #!/bin/bash
 
 # experiments
-for dataset in cora_ml citeseer pubmed wiki_vote email
+for dataset in {00..29}
 do
 	for dim in 2 5 10 25 50
 	do	
-		for seed in {00..29}
+		for seed in 00
 		do
 			for method in ln harmonic
 			do 
 				for exp in recon_experiment lp_experiment
 				do
+
 					embedding_dir=$(printf \
-					"embeddings/${dataset}/${exp}/seed=%03d/dim=%03d/${method}" ${seed} ${dim})
+						"embeddings/synthetic_scale_free/${dataset}/${exp}/seed=%03d/dim=%03d/${method}" ${seed} ${dim})
 
 					for emb in "source" "target"
-					do 
+					do
 
 						if [ -f ${embedding_dir}/${emb}.csv.gz ] 
 						then 
@@ -27,7 +28,7 @@ do
 							echo no embedding at ${embedding_dir}/${emb}.csv
 						fi
 
-					done 
+					done
 				done
 			done
 		done
