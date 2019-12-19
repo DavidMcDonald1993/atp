@@ -11,7 +11,7 @@
 datasets=({00..29})
 dims=(2 5 10 25 50)
 seeds=(0)
-exps=(lp_experiment,recon_experiment)
+exps=(lp_experiment recon_experiment)
 
 num_datasets=${#datasets[@]}
 num_dims=${#dims[@]}
