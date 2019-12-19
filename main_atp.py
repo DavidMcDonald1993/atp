@@ -83,6 +83,6 @@ if __name__ == "__main__":
 		except OSError as e:
 			if e.errno != errno.EEXIST:
 				raise
-	source.to_csv(os.path.join(output_dir, "source.csv.gz"))
-	target.to_csv(os.path.join(output_dir, "target.csv.gz"))
+	source.to_csv(os.path.join(output_dir, "source.csv"))
+	target.to_csv(os.path.join(output_dir, "target.csv"))
 
