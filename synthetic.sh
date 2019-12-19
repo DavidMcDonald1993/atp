@@ -35,6 +35,7 @@ then
 else
     edgelist=$(printf ../HEDNet/edgelists/${dataset}/seed=%03d/training_edges/edgelist.tsv ${seed})
 fi
+echo edgelist is $edgelist
 embedding_dir=embeddings/${dataset}/${exp}
 embedding_dir=$(printf "${embedding_dir}/seed=%03d/dim=%03d" ${seed} ${dim})
 
@@ -81,10 +82,10 @@ then
 
     python remove_cycle_edges_to_DAGs.py ${remove_edges_args}
 
-    embed_args=$(echo --dag ${output}/edgelist_DAG.edges \
-        --rank ${dim} --using_SVD )
-
 fi
+
+embed_args=$(echo --dag ${output}/edgelist_DAG.edges \
+    --rank ${dim} --using_SVD )
 
 if [ ! -f ${embedding_dir}/ln/source.csv.gz ]
 then  
