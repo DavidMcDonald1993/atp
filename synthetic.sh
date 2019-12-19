@@ -26,6 +26,7 @@ exp_id=$((SLURM_ARRAY_TASK_ID % num_exps))
 dataset=synthetic_scale_free/${datasets[$dataset_id]}
 dim=${dims[$dim_id]}
 seed=${seeds[$seed_id]}
+exp=${exps[$exp_id]}
 
 data_dir=../HEDNet/datasets/${dataset}
 if [ $exp == "recon_experiment" ]
