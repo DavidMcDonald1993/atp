@@ -1,12 +1,12 @@
 #!/bin/bash
 
-#SBATCH --job-name=ATPembeddingsSYNTHETIC
-#SBATCH --output=ATPembeddingsSYNTHETIC_%A_%a.out
-#SBATCH --error=ATPembeddingsSYNTHETIC_%A_%a.err
+#SBATCH --job-name=ATPSYNTHETIC
+#SBATCH --output=ATPSYNTHETIC_%A_%a.out
+#SBATCH --error=ATPSYNTHETIC_%A_%a.err
 #SBATCH --array=0-299
 #SBATCH --time=10:00:00
 #SBATCH --ntasks=1
-#SBATCH --mem=20G
+#SBATCH --mem=5G
 
 datasets=({00..29})
 dims=(2 5 10 25 50)
@@ -87,7 +87,7 @@ fi
 embed_args=$(echo --dag ${output}/edgelist_DAG.edges \
     --rank ${dim} --using_SVD )
 
-for method in linear ln harmonic 
+for method in ln harmonic 
 do
 
     if [ ! -f ${embedding_dir}/${method}/source.csv.gz ]
@@ -97,15 +97,19 @@ do
         then
 
         
-            echo performing $method embedding
+            echo performing ${method} embedding
             # perform embedding
-            args=$(echo --strategy ${method} --output ${embedding_dir}/${method})
+            args=$(echo --strategy ${method} --output ${embedding_dir}/${method} )
             python main_atp.py ${embed_args} ${args}
         fi
 
         echo ${embedding_dir}/${method}/source.csv exists -- compressing 
         gzip ${embedding_dir}/${method}/source.csv
         gzip ${embedding_dir}/${method}/target.csv
+
+    else 
+
+        echo ${embedding_dir}/${method}/source.csv.gz already exists
 
     fi 
 

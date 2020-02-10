@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#SBATCH --job-name=ATPembeddingsREALWORLD
-#SBATCH --output=ATPembeddingsREALWORLD_%A_%a.out
-#SBATCH --error=ATPembeddingsREALWORLD_%A_%a.err
+#SBATCH --job-name=ATPREALWORLD
+#SBATCH --output=ATPREALWORLD_%A_%a.out
+#SBATCH --error=ATPREALWORLD_%A_%a.err
 #SBATCH --array=0-1499
 #SBATCH --time=10-00:00:00
 #SBATCH --ntasks=1
@@ -43,7 +43,7 @@ module purge
 module load bluebear
 module load Python/2.7.15-GCCcore-8.2.0
 
-# install required packages
+install required packages
 pip install --user numpy==1.13.3 pandas trueskill networkx==1.10
 
 output=$(printf "datasets/${dataset}/${exp}/seed=%03d" ${seed})
@@ -99,7 +99,7 @@ do
         
             echo performing ${method} embedding
             # perform embedding
-            args=$(echo --strategy ${method} --output ${embedding_dir}/${method})
+            args=$(echo --strategy ${method} --output ${embedding_dir}/${method} )
             python main_atp.py ${embed_args} ${args}
         fi
 
