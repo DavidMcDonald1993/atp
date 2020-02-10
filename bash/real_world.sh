@@ -1,16 +1,16 @@
 #!/bin/bash
 
-#SBATCH --job-name=ATPembeddingsSYNTHETIC
-#SBATCH --output=ATPembeddingsSYNTHETIC_%A_%a.out
-#SBATCH --error=ATPembeddingsSYNTHETIC_%A_%a.err
-#SBATCH --array=0-299
-#SBATCH --time=10:00:00
+#SBATCH --job-name=ATPembeddingsREALWORLD
+#SBATCH --output=ATPembeddingsREALWORLD_%A_%a.out
+#SBATCH --error=ATPembeddingsREALWORLD_%A_%a.err
+#SBATCH --array=0-1499
+#SBATCH --time=10-00:00:00
 #SBATCH --ntasks=1
-#SBATCH --mem=20G
+#SBATCH --mem=25G
 
-datasets=({00..29})
+datasets=(cora_ml citeseer pubmed wiki_vote email)
 dims=(2 5 10 25 50)
-seeds=(0)
+seeds=({00..29})
 exps=(lp_experiment recon_experiment)
 
 num_datasets=${#datasets[@]}
@@ -23,7 +23,7 @@ dim_id=$((SLURM_ARRAY_TASK_ID / (num_exps * num_seeds) % num_dims))
 seed_id=$((SLURM_ARRAY_TASK_ID / num_exps % num_seeds))
 exp_id=$((SLURM_ARRAY_TASK_ID % num_exps))
 
-dataset=synthetic_scale_free/${datasets[$dataset_id]}
+dataset=${datasets[$dataset_id]}
 dim=${dims[$dim_id]}
 seed=${seeds[$seed_id]}
 exp=${exps[$exp_id]}
@@ -87,28 +87,53 @@ fi
 embed_args=$(echo --dag ${output}/edgelist_DAG.edges \
     --rank ${dim} --using_SVD )
 
-if [ ! -f ${embedding_dir}/ln/source.csv.gz ]
-then  
+
+for method in (linear ln harmonic)
+do
+
+    if [ ! -f ${embedding_dir}/${method}/source.csv.gz ]
+    then  
+
+        if [ ! -f ${embedding_dir}/${method}/source.csv ]
+        then
+
+        
+            echo performing ln embedding
+            # perform embedding
+            args=$(echo --strategy ${method} --output ${embedding_dir}/${method})
+            python main_atp.py ${embed_args} ${args}
+        fi
+
+        echo ${embedding_dir}/${method}/source.csv exists -- compressing 
+        gzip ${embedding_dir}/${method}/source.csv
+        gzip ${embedding_dir}/${method}/target.csv
+
+    fi 
+
+done
+
+# if [ ! -f ${embedding_dir}/ln/source.csv.gz ]
+# then  
     
-    echo performing ln embedding
-    # perform embedding (ln)
-    ln_args=$(echo --strategy ln --output ${embedding_dir}/ln)
-    python main_atp.py ${embed_args} ${ln_args}
+#     echo performing ln embedding
+#     # perform embedding (ln)
+#     ln_args=$(echo --strategy ln --output ${embedding_dir}/ln)
+#     python main_atp.py ${embed_args} ${ln_args}
 
-    gzip ${embedding_dir}/ln/source.csv
-    gzip ${embedding_dir}/ln/target.csv
+#     gzip ${embedding_dir}/ln/source.csv
+#     gzip ${embedding_dir}/ln/target.csv
 
-fi 
+# fi 
 
-if [ ! -f ${embedding_dir}/harmonic/source.csv.gz ]
-then
+# if [ ! -f ${embedding_dir}/harmonic/source.csv.gz ]
+# then
 
-    echo performing harmonic embedding
-    # perform embedding (harmonic)
-    harmonic_args=$(echo --strategy harmonic \
-        --output ${embedding_dir}/harmonic)
-    python main_atp.py ${embed_args} ${harmonic_args}
+#     echo performing harmonic embedding
+#     # perform embedding (harmonic)
+#     harmonic_args=$(echo --strategy harmonic \
+#         --output ${embedding_dir}/harmonic)
+#     python main_atp.py ${embed_args} ${harmonic_args}
 
-    gzip ${embedding_dir}/harmonic/source.csv
-    gzip ${embedding_dir}/harmonic/target.csv
-fi
+#     gzip ${embedding_dir}/harmonic/source.csv
+#     gzip ${embedding_dir}/harmonic/target.csv
+# fi

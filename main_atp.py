@@ -26,10 +26,10 @@ def main(input_graph_name, rank = 64, nodeID_need_mapping = False, strategy = "H
 			mapping = pickle.load(f)
 	else:
 		transformed_graph_file_name = input_graph_name
-	W,H = hierarchical_graph_embedding(transformed_graph_file_name, deleted_edges_file = None, rank = rank, strategy = strategy, using_GPU = using_GPU, dense_M = dense_M, using_SVD = using_SVD)
+	W, H = hierarchical_graph_embedding(transformed_graph_file_name, deleted_edges_file = None, rank = rank, strategy = strategy, using_GPU = using_GPU, dense_M = dense_M, using_SVD = using_SVD)
 	transformed_W = {}
 	transformed_H = {}
-	for index,(w,h) in enumerate(zip(W,H.T)):
+	for index, (w, h) in enumerate(zip(W, H.T)):
 		if nodeID_need_mapping:
 			transformed_W[mapping["i2s"][index]] = w
 			transformed_H[mapping["i2s"][index]] = h
@@ -41,7 +41,6 @@ def main(input_graph_name, rank = 64, nodeID_need_mapping = False, strategy = "H
 
 
 	return pd.DataFrame(transformed_H).T, pd.DataFrame(transformed_W).T
-	# print (pd.DataFrame(transformed_W).T.shape)
 	
 	# # W_file = os.path.abspath(input_graph_name).split(".")[0] + "_r" + str(rank)  + "_" + strategy + "_W.pkl"
 	# # H_file = os.path.abspath(input_graph_name).split(".")[0] + "_r" + str(rank)  + "_" + strategy + "_H.pkl"
@@ -83,6 +82,7 @@ if __name__ == "__main__":
 		except OSError as e:
 			if e.errno != errno.EEXIST:
 				raise
+
 	source.to_csv(os.path.join(output_dir, "source.csv"))
 	target.to_csv(os.path.join(output_dir, "target.csv"))
 

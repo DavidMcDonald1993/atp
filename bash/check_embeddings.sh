@@ -7,7 +7,7 @@ do
 	do	
 		for seed in {00..29}
 		do
-			for method in ln harmonic
+			for method in linear ln harmonic
 			do 
 				for exp in recon_experiment lp_experiment
 				do
