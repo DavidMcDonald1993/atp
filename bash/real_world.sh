@@ -88,7 +88,7 @@ embed_args=$(echo --dag ${output}/edgelist_DAG.edges \
     --rank ${dim} --using_SVD )
 
 
-for method in (linear ln harmonic)
+for method in ( linear ln harmonic )
 do
 
     if [ ! -f ${embedding_dir}/${method}/source.csv.gz ]
