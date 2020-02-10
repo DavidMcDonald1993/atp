@@ -107,6 +107,8 @@ do
         gzip ${embedding_dir}/${method}/source.csv
         gzip ${embedding_dir}/${method}/target.csv
 
+    else 
+        echo ${embedding_dir}/${method}/source.csv.gz already exists
     fi 
 
 done
