@@ -97,7 +97,7 @@ do
         then
 
         
-            echo performing ln embedding
+            echo performing $method embedding
             # perform embedding
             args=$(echo --strategy ${method} --output ${embedding_dir}/${method})
             python main_atp.py ${embed_args} ${args}
