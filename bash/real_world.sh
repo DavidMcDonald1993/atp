@@ -10,7 +10,7 @@
 
 datasets=(cora_ml citeseer pubmed wiki_vote email)
 dims=(2 5 10 25 50)
-seeds=({00..29})
+seeds=({0..29})
 exps=(lp_experiment recon_experiment)
 
 num_datasets=${#datasets[@]}
@@ -27,6 +27,8 @@ dataset=${datasets[$dataset_id]}
 dim=${dims[$dim_id]}
 seed=${seeds[$seed_id]}
 exp=${exps[$exp_id]}
+
+echo $dataset $dim $seed $exp
 
 data_dir=../HEDNet/datasets/${dataset}
 if [ $exp == "recon_experiment" ]
