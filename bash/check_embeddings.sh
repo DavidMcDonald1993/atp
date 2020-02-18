@@ -5,7 +5,7 @@ for dataset in cora_ml citeseer pubmed wiki_vote email
 do
 	for dim in 2 5 10 25 50
 	do	
-		for seed in {00..29}
+		for seed in {0..29}
 		do
 			for method in ln harmonic
 			do 
