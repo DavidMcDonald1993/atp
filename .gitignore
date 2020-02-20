@@ -88,3 +88,6 @@ ENV/
 *.DS_Store
 # Rope project settings
 .ropeproject
+
+datasets 
+embeddings
