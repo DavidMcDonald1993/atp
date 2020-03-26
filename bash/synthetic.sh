@@ -3,28 +3,28 @@
 #SBATCH --job-name=ATPSYNTHETIC
 #SBATCH --output=ATPSYNTHETIC_%A_%a.out
 #SBATCH --error=ATPSYNTHETIC_%A_%a.err
-#SBATCH --array=0-299
+#SBATCH --array=0-59
 #SBATCH --time=10:00:00
 #SBATCH --ntasks=1
 #SBATCH --mem=5G
 
 datasets=({00..29})
-dims=(2 5 10 25 50)
+# dims=(2 5 10 25 50)
 seeds=(0)
 exps=(lp_experiment recon_experiment)
 
 num_datasets=${#datasets[@]}
-num_dims=${#dims[@]}
+# num_dims=${#dims[@]}
 num_seeds=${#seeds[@]}
 num_exps=${#exps[@]}
 
 dataset_id=$((SLURM_ARRAY_TASK_ID / (num_exps * num_seeds * num_dims) % num_datasets))
-dim_id=$((SLURM_ARRAY_TASK_ID / (num_exps * num_seeds) % num_dims))
+# dim_id=$((SLURM_ARRAY_TASK_ID / (num_exps * num_seeds) % num_dims))
 seed_id=$((SLURM_ARRAY_TASK_ID / num_exps % num_seeds))
 exp_id=$((SLURM_ARRAY_TASK_ID % num_exps))
 
 dataset=synthetic_scale_free/${datasets[$dataset_id]}
-dim=${dims[$dim_id]}
+# dim=${dims[$dim_id]}
 seed=${seeds[$seed_id]}
 exp=${exps[$exp_id]}
 
@@ -36,8 +36,6 @@ else
     edgelist=$(printf ../HEDNet/edgelists/${dataset}/seed=%03d/training_edges/edgelist.tsv ${seed})
 fi
 echo edgelist is $edgelist
-embedding_dir=embeddings/${dataset}/${exp}
-embedding_dir=$(printf "${embedding_dir}/seed=%03d/dim=%03d" ${seed} ${dim})
 
 module purge
 module load bluebear
@@ -84,46 +82,40 @@ then
 
 fi
 
-embed_args=$(echo --dag ${output}/edgelist_DAG.edges \
-    --rank ${dim} --using_SVD )
-
-for method in ln harmonic 
+for dim in 2 5 10 25 50
 do
 
-    if [ ! -f ${embedding_dir}/${method}/source.csv.gz ]
-    then  
+    embedding_dir=embeddings/${dataset}/${exp}
+    embedding_dir=$(printf "${embedding_dir}/seed=%03d/dim=%03d" ${seed} ${dim})
 
-        if [ ! -f ${embedding_dir}/${method}/source.csv ]
-        then
+    embed_args=$(echo --dag ${output}/edgelist_DAG.edges \
+        --rank ${dim} --using_SVD )
 
-        
-            echo performing ${method} embedding
-            # perform embedding
-            args=$(echo --strategy ${method} --output ${embedding_dir}/${method} )
-            python main_atp.py ${embed_args} ${args}
-        fi
+    for method in ln harmonic 
+    do
 
-        echo ${embedding_dir}/${method}/source.csv exists -- compressing 
-        gzip ${embedding_dir}/${method}/source.csv
-        gzip ${embedding_dir}/${method}/target.csv
+        if [ ! -f ${embedding_dir}/${method}/source.csv.gz ]
+        then  
 
-    else 
+            if [ ! -f ${embedding_dir}/${method}/source.csv ]
+            then
 
-        echo ${embedding_dir}/${method}/source.csv.gz already exists
+            
+                echo performing ${method} embedding
+                # perform embedding
+                args=$(echo --strategy ${method} --output ${embedding_dir}/${method} )
+                python main_atp.py ${embed_args} ${args}
+            fi
 
-    fi 
+            echo ${embedding_dir}/${method}/source.csv exists -- compressing 
+            gzip ${embedding_dir}/${method}/source.csv
+            gzip ${embedding_dir}/${method}/target.csv
 
+        else 
+
+            echo ${embedding_dir}/${method}/source.csv.gz already exists
+
+        fi 
+
+    done
 done
-
-# if [ ! -f ${embedding_dir}/harmonic/source.csv.gz ]
-# then
-
-#     echo performing harmonic embedding
-#     # perform embedding (harmonic)
-#     harmonic_args=$(echo --strategy harmonic \
-#         --output ${embedding_dir}/harmonic)
-#     python main_atp.py ${embed_args} ${harmonic_args}
-
-#     gzip ${embedding_dir}/harmonic/source.csv
-#     gzip ${embedding_dir}/harmonic/target.csv
-# fi

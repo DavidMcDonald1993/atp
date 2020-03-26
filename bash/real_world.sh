@@ -3,32 +3,32 @@
 #SBATCH --job-name=ATPREALWORLD
 #SBATCH --output=ATPREALWORLD_%A_%a.out
 #SBATCH --error=ATPREALWORLD_%A_%a.err
-#SBATCH --array=0-1499
+#SBATCH --array=0-299
 #SBATCH --time=10-00:00:00
 #SBATCH --ntasks=1
-#SBATCH --mem=25G
+#SBATCH --mem=5G
 
-datasets=(cora_ml citeseer pubmed wiki_vote email)
-dims=(2 5 10 25 50)
+datasets=(cora_ml citeseer pubmed wiki_vote cora)
+# dims=(2 5 10 25 50)
 seeds=({0..29})
 exps=(lp_experiment recon_experiment)
 
 num_datasets=${#datasets[@]}
-num_dims=${#dims[@]}
+# num_dims=${#dims[@]}
 num_seeds=${#seeds[@]}
 num_exps=${#exps[@]}
 
-dataset_id=$((SLURM_ARRAY_TASK_ID / (num_exps * num_seeds * num_dims) % num_datasets))
-dim_id=$((SLURM_ARRAY_TASK_ID / (num_exps * num_seeds) % num_dims))
+dataset_id=$((SLURM_ARRAY_TASK_ID / (num_exps * num_seeds) % num_datasets))
+# dim_id=$((SLURM_ARRAY_TASK_ID / (num_exps * num_seeds) % num_dims))
 seed_id=$((SLURM_ARRAY_TASK_ID / num_exps % num_seeds))
 exp_id=$((SLURM_ARRAY_TASK_ID % num_exps))
 
 dataset=${datasets[$dataset_id]}
-dim=${dims[$dim_id]}
+# dim=${dims[$dim_id]}
 seed=${seeds[$seed_id]}
 exp=${exps[$exp_id]}
 
-echo $dataset $dim $seed $exp
+echo $dataset $seed $exp
 
 data_dir=../HEDNet/datasets/${dataset}
 if [ $exp == "recon_experiment" ]
@@ -38,14 +38,12 @@ else
     edgelist=$(printf ../HEDNet/edgelists/${dataset}/seed=%03d/training_edges/edgelist.tsv ${seed})
 fi
 echo edgelist is $edgelist
-embedding_dir=embeddings/${dataset}/${exp}
-embedding_dir=$(printf "${embedding_dir}/seed=%03d/dim=%03d" ${seed} ${dim})
 
 module purge
 module load bluebear
 module load Python/2.7.15-GCCcore-8.2.0
 
-install required packages
+# install required packages
 pip install --user numpy==1.13.3 pandas trueskill networkx==1.10
 
 output=$(printf "datasets/${dataset}/${exp}/seed=%03d" ${seed})
@@ -70,7 +68,6 @@ then
     break_cycles_args=$(echo -g ../atp/${output}/edgelist.edges )
     python break_cycles.py ${break_cycles_args}
 
-
     cd ../atp
 fi 
 
@@ -86,57 +83,38 @@ then
 
 fi
 
-embed_args=$(echo --dag ${output}/edgelist_DAG.edges \
-    --rank ${dim} --using_SVD )
-
-for method in ln harmonic
+for dim in 2 5 10 25 50
 do
 
-    if [ ! -f ${embedding_dir}/${method}/source.csv.gz ]
-    then  
+    embedding_dir=embeddings/${dataset}/${exp}
+    embedding_dir=$(printf "${embedding_dir}/seed=%03d/dim=%03d" ${seed} ${dim})
 
-        if [ ! -f ${embedding_dir}/${method}/source.csv ]
-        then
+    embed_args=$(echo --dag ${output}/edgelist_DAG.edges \
+        --rank ${dim} --using_SVD )
 
-        
-            echo performing ${method} embedding
-            # perform embedding
-            args=$(echo --strategy ${method} --output ${embedding_dir}/${method} )
-            python main_atp.py ${embed_args} ${args}
-        fi
+    for method in ln harmonic
+    do
 
-        echo ${embedding_dir}/${method}/source.csv exists -- compressing 
-        gzip ${embedding_dir}/${method}/source.csv
-        gzip ${embedding_dir}/${method}/target.csv
+        if [ ! -f ${embedding_dir}/${method}/source.csv.gz ]
+        then  
 
-    else 
-        echo ${embedding_dir}/${method}/source.csv.gz already exists
-    fi 
+            if [ ! -f ${embedding_dir}/${method}/source.csv ]
+            then
 
+            
+                echo performing ${method} embedding dim ${dim}
+                # perform embedding
+                args=$(echo --strategy ${method} --output ${embedding_dir}/${method} )
+                python main_atp.py ${embed_args} ${args}
+            fi
+
+            echo ${embedding_dir}/${method}/source.csv exists -- compressing 
+            gzip ${embedding_dir}/${method}/source.csv
+            gzip ${embedding_dir}/${method}/target.csv
+
+        else 
+            echo ${embedding_dir}/${method}/source.csv.gz already exists
+        fi 
+
+    done
 done
-
-# if [ ! -f ${embedding_dir}/ln/source.csv.gz ]
-# then  
-    
-#     echo performing ln embedding
-#     # perform embedding (ln)
-#     ln_args=$(echo --strategy ln --output ${embedding_dir}/ln)
-#     python main_atp.py ${embed_args} ${ln_args}
-
-#     gzip ${embedding_dir}/ln/source.csv
-#     gzip ${embedding_dir}/ln/target.csv
-
-# fi 
-
-# if [ ! -f ${embedding_dir}/harmonic/source.csv.gz ]
-# then
-
-#     echo performing harmonic embedding
-#     # perform embedding (harmonic)
-#     harmonic_args=$(echo --strategy harmonic \
-#         --output ${embedding_dir}/harmonic)
-#     python main_atp.py ${embed_args} ${harmonic_args}
-
-#     gzip ${embedding_dir}/harmonic/source.csv
-#     gzip ${embedding_dir}/harmonic/target.csv
-# fi
