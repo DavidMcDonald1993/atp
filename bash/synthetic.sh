@@ -10,13 +10,13 @@
 
 datasets=({00..29})
 seeds=(0)
-exps=(lp_experiment recon_experiment)
+exps=(recon_experiment lp_experiment)
 
 num_datasets=${#datasets[@]}
 num_seeds=${#seeds[@]}
 num_exps=${#exps[@]}
 
-dataset_id=$((SLURM_ARRAY_TASK_ID / (num_exps * num_seeds * num_dims) % num_datasets))
+dataset_id=$((SLURM_ARRAY_TASK_ID / (num_exps * num_seeds) % num_datasets))
 seed_id=$((SLURM_ARRAY_TASK_ID / num_exps % num_seeds))
 exp_id=$((SLURM_ARRAY_TASK_ID % num_exps))
 
