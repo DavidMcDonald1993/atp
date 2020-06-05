@@ -9,33 +9,29 @@
 #SBATCH --mem=5G
 
 datasets=(cora_ml citeseer pubmed wiki_vote cora)
-# dims=(2 5 10 25 50)
 seeds=({0..29})
 exps=(lp_experiment recon_experiment)
 
 num_datasets=${#datasets[@]}
-# num_dims=${#dims[@]}
 num_seeds=${#seeds[@]}
 num_exps=${#exps[@]}
 
 dataset_id=$((SLURM_ARRAY_TASK_ID / (num_exps * num_seeds) % num_datasets))
-# dim_id=$((SLURM_ARRAY_TASK_ID / (num_exps * num_seeds) % num_dims))
 seed_id=$((SLURM_ARRAY_TASK_ID / num_exps % num_seeds))
 exp_id=$((SLURM_ARRAY_TASK_ID % num_exps))
 
 dataset=${datasets[$dataset_id]}
-# dim=${dims[$dim_id]}
 seed=${seeds[$seed_id]}
 exp=${exps[$exp_id]}
 
 echo $dataset $seed $exp
 
-data_dir=../HEDNet/datasets/${dataset}
+data_dir=../HEADNET/datasets/${dataset}
 if [ $exp == "recon_experiment" ]
 then 
     edgelist=${data_dir}/edgelist.tsv.gz
 else
-    edgelist=$(printf ../HEDNet/edgelists/${dataset}/seed=%03d/training_edges/edgelist.tsv ${seed})
+    edgelist=$(printf ../HEADNET/edgelists/${dataset}/seed=%03d/training_edges/edgelist.tsv ${seed})
 fi
 echo edgelist is $edgelist
 
@@ -83,7 +79,7 @@ then
 
 fi
 
-for dim in 2 5 10 25 50
+for dim in 5 10 25 50
 do
 
     embedding_dir=embeddings/${dataset}/${exp}
