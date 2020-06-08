@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # experiments
-for dataset in cora_ml citeseer pubmed wiki_vote email
+for dataset in cora_ml citeseer pubmed wiki_vote cora
 do
 	for dim in 5 10 25 50
 	do	
